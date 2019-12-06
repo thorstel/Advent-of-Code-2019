@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fs;
-use std::io;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut prog: Vec<i32> = fs::read_to_string("input.txt")?
@@ -8,12 +7,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         .split(",")
         .map(|s| s.parse().unwrap())
         .collect();
-    exec_prog(&mut prog);
+    let output = exec_prog(&mut prog.clone(), vec![1]);
+    println!("Part 1 = {}", output.last().unwrap());
+    let output = exec_prog(&mut prog, vec![5]);
+    println!("Part 2 = {}", output.last().unwrap());
     Ok(())
 }
 
-fn exec_prog(prog: &mut [i32]) {
-    let mut ip = 0;
+fn exec_prog(prog: &mut [i32], input: Vec<i32>) -> Vec<i32> {
+    let mut ip     = 0;
+    let mut output = Vec::new();
+    let mut input  = input.iter();
     loop {
         let op_code =  prog[ip] %    100;
         let mode1   = (prog[ip] %   1000) /   100 == 1;
@@ -44,17 +48,13 @@ fn exec_prog(prog: &mut [i32]) {
                 ip        += 4;
             }
             3 => { // input
-                let mut input = String::new();
-                println!("Input required: ");
-                io::stdin().read_line(&mut input).expect(":-(");
-                let input  = input.trim().parse::<i32>().unwrap();
                 let pos    = prog[ip + 1] as usize;
-                prog[pos]  = input;
+                prog[pos]  = *input.next().unwrap();
                 ip        += 2;
             }
             4 => { // output
                 let val = prog[get_pos(mode1, ip + 1)];
-                println!(">> {}", val);
+                output.push(val);
                 ip += 2;
             }
             5 => { // jump-if-true
@@ -97,7 +97,7 @@ fn exec_prog(prog: &mut [i32]) {
                 }
                 ip += 4;
             }
-            99 => break,
+            99 => break output,
             _  => panic!("Invalid op code!"),
         }
     }
