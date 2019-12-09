@@ -3,21 +3,24 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fs;
 
+use intcode::IntcodeProg;
+use intcode::ProgramStatus as IPS;
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let prog: Vec<i32> = fs::read_to_string("input.txt")?
+    let prog: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
         .split(",")
         .map(|s| s.parse().unwrap())
         .collect();
 
-    let mut signal         = i32::min_value();
+    let mut signal         = i64::min_value();
     let mut phase_settings = [0, 1, 2, 3, 4];
     permutohedron::heap_recursive(&mut phase_settings, |permut| {
         signal = cmp::max(signal, amplify_signal(&prog, permut));
     });
     println!("Part 1 = {}", signal);
 
-    let mut signal         = i32::min_value();
+    let mut signal         = i64::min_value();
     let mut phase_settings = [5, 6, 7, 8, 9];
     permutohedron::heap_recursive(&mut phase_settings, |permut| {
         signal = cmp::max(signal, amplify_signal_feedback(&prog, permut));
@@ -26,25 +29,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn amplify_signal(prog: &[i32], phase_settings: &[i32]) -> i32 {
+fn amplify_signal(prog: &[i64], phase_settings: &[i64]) -> i64 {
     let mut out = 0;
     for ps in phase_settings {
-        out = *intcode::exec_prog(prog, vec![*ps, out]).back().unwrap();
+        out = *IntcodeProg::exec_prog(prog, vec![*ps, out]).back().unwrap();
     }
     return out;
 }
 
-fn amplify_signal_feedback(prog: &[i32], phase_settings: &[i32]) -> i32 {
-    let mut prog0   = prog.to_vec();
-    let mut prog1   = prog.to_vec();
-    let mut prog2   = prog.to_vec();
-    let mut prog3   = prog.to_vec();
-    let mut prog4   = prog.to_vec();
-    let mut ip0     = 0;
-    let mut ip1     = 0;
-    let mut ip2     = 0;
-    let mut ip3     = 0;
-    let mut ip4     = 0;
+fn amplify_signal_feedback(prog: &[i64], phase_settings: &[i64]) -> i64 {
+    let mut prog0   = IntcodeProg::new(prog);
+    let mut prog1   = IntcodeProg::new(prog);
+    let mut prog2   = IntcodeProg::new(prog);
+    let mut prog3   = IntcodeProg::new(prog);
+    let mut prog4   = IntcodeProg::new(prog);
     let mut output0 = VecDeque::new(); // == input of 1 
     let mut output1 = VecDeque::new(); // == input of 2 
     let mut output2 = VecDeque::new(); // == input of 3 
@@ -59,23 +57,15 @@ fn amplify_signal_feedback(prog: &[i32], phase_settings: &[i32]) -> i32 {
     output4.push_back(0);
 
     loop {
-        while intcode::exec_instr(&mut prog0, &mut ip0, &mut output4, &mut output0)
-            == intcode::ProgramStatus::Success
-        {}
-        while intcode::exec_instr(&mut prog1, &mut ip1, &mut output0, &mut output1)
-            == intcode::ProgramStatus::Success
-        {}
-        while intcode::exec_instr(&mut prog2, &mut ip2, &mut output1, &mut output2)
-            == intcode::ProgramStatus::Success
-        {}
-        while intcode::exec_instr(&mut prog3, &mut ip3, &mut output2, &mut output3)
-            == intcode::ProgramStatus::Success
-        {}
+        while prog0.exec_instr(&mut output4, &mut output0) == IPS::Success {}
+        while prog1.exec_instr(&mut output0, &mut output1) == IPS::Success {}
+        while prog2.exec_instr(&mut output1, &mut output2) == IPS::Success {}
+        while prog3.exec_instr(&mut output2, &mut output3) == IPS::Success {}
         loop {
-            match intcode::exec_instr(&mut prog4, &mut ip4, &mut output3, &mut output4) {
-                intcode::ProgramStatus::Success         => (),
-                intcode::ProgramStatus::WaitingForInput => break,
-                intcode::ProgramStatus::Finished        => return *output4.front().unwrap(),
+            match prog4.exec_instr(&mut output3, &mut output4) {
+                IPS::Success         => (),
+                IPS::WaitingForInput => break,
+                IPS::Finished        => return *output4.front().unwrap(),
             }
         }
     }

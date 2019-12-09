@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
     let output = IntcodeProg::exec_prog(&prog, vec![1]);
     println!("Part 1 = {}", output.back().unwrap());
-    let output = IntcodeProg::exec_prog(&prog, vec![5]);
+    let output = IntcodeProg::exec_prog(&prog, vec![2]);
     println!("Part 2 = {}", output.back().unwrap());
     Ok(())
 }
