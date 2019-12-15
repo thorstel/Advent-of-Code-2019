@@ -3,7 +3,9 @@ use std::env;
 use std::error::Error;
 use std::fs;
 
-#[derive(PartialEq, Eq, Hash)]
+use num::integer::gcd;
+
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Asteroid {
     x: i32,
     y: i32,
@@ -16,35 +18,60 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(filename) => fs::read_to_string(filename)?,
         None           => fs::read_to_string("input.txt")?,
     };
+
     let mut asteroids = Vec::new();
     for (row, line) in input.lines().enumerate() {
         for (col, c) in line.chars().enumerate() {
             if c == '#' {
                 asteroids.push(Asteroid {
-                    x: row as i32,
-                    y: col as i32,
+                    x: col as i32,
+                    y: row as i32,
                 });
             }
         }
     }
 
-    let max_seen = asteroids
+    let (station, mut seen) = asteroids
         .iter()
-        .map(|a| count_seen_asteroids(a, &asteroids))
-        .max()
+        .map(|a| (a, seen_asteroids(a, &asteroids)))
+        .max_by(|(_, v), (_, w)| v.len().cmp(&w.len()))
         .unwrap();
-    println!("Part 1 = {}", max_seen);
+    println!("Part 1 = {}", seen.len());
+
+    assert!(seen.len() >= 200, "Part 2 only works 200+ seen asteroids!");
+    seen.sort_by(|a1, a2| {
+        let q1 = quadrant(&station, a1);
+        let q2 = quadrant(&station, a2);
+        if q1 == q2 {
+            let d1 = distance(&station, a1);
+            let d2 = distance(&station, a2);
+            d1.cmp(&d2)
+        } else {
+            q1.cmp(&q2)
+        }
+    });
+    let x = seen[199].x;
+    let y = seen[199].y;
+    println!("Part 2 = {}", (100 * x) + y);
     Ok(())
 }
 
-fn count_seen_asteroids(orig: &Asteroid, asteroids: &Vec<Asteroid>) -> usize {
+fn seen_asteroids<'a>(
+    orig:      &'a Asteroid,
+    asteroids: &'a Vec<Asteroid>)
+-> Vec<&'a Asteroid> {
+    let mut result = Vec::new();
     let mut seen = HashSet::new();
     for asteroid in asteroids {
         if orig != asteroid {
-            seen.insert(calc_reference_point(orig, asteroid));
+            let ref_point = calc_reference_point(orig, asteroid);
+            if seen.get(&ref_point) == None {
+                seen.insert(ref_point);
+                result.push(asteroid);
+            }
         }
     }
-    seen.len()
+    return result;
 }
 
 fn calc_reference_point(src: &Asteroid, dst: &Asteroid) -> Asteroid {
@@ -58,11 +85,20 @@ fn calc_reference_point(src: &Asteroid, dst: &Asteroid) -> Asteroid {
     Asteroid { x: xd, y: yd }
 }
 
-fn gcd(mut m: i32, mut n: i32) -> i32 {
-    while m != 0 {
-        let old_m = m;
-        m = n % m;
-        n = old_m;
-    }
-    n.abs()
+//  3 | 0 
+// ---S---
+//  2 | 1 
+fn quadrant(station: &Asteroid, asteroid: &Asteroid) -> usize {
+    if      asteroid.x >= station.x && asteroid.y <  station.y { 0 }
+    else if asteroid.x >  station.x && asteroid.y >= station.y { 1 }
+    else if asteroid.x <= station.x && asteroid.y >  station.y { 2 }
+    else                                                       { 3 }
+}
+
+fn distance(station: &Asteroid, asteroid: &Asteroid) -> i32 {
+    let dx = asteroid.x - station.x;
+    let dy = asteroid.y - station.y;
+    if      dx == 0 { 100 * dy        }
+    else if dy == 0 { 100 * dx        }
+    else            { (100 * dy) / dx }
 }
