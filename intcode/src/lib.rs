@@ -28,8 +28,13 @@ impl IntcodeProg {
         let mut output = VecDeque::new();
         let mut inputs = VecDeque::new();
         input.iter().for_each(|e| inputs.push_back(*e));
-        while prog.exec_instr(&mut inputs, &mut output) != ProgramStatus::Finished {}
-        return output;
+        loop {
+            match prog.exec_instr(&mut inputs, &mut output) {
+                ProgramStatus::Success         => (),
+                ProgramStatus::Finished        => break output,
+                ProgramStatus::WaitingForInput => panic!("Missing input!"),
+            }
+        }
     }
 
     pub fn exec_instr(
