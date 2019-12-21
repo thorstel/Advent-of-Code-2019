@@ -4,7 +4,7 @@ use std::fs;
 const PATTERN: [i64; 4] = [0, 1, 0, -1];
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input  = fs::read_to_string("input.txt")?;
+    let input = fs::read_to_string("input.txt")?;
     println!("Part 1 = {}", calc_phases(&input));
     println!("Part 2 = {}", calc_phases2(&input));
     Ok(())
@@ -36,8 +36,8 @@ fn calc_phases2(input: &str) -> String {
         signal = calc_signal2(signal);
     }
     let result: Vec<_> = signal
-        .iter().
-        skip(offset)
+        .iter()
+        .skip(offset)
         .map(|e| e.to_string())
         .take(8)
         .collect();
