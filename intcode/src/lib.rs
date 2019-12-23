@@ -7,7 +7,7 @@ pub enum ProgramStatus {
     Finished,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct IntcodeProg {
     mem:      Vec<i64>,
     ip:       usize,
