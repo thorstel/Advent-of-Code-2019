@@ -6,7 +6,7 @@ use intcode::IntcodeProg;
 fn main() -> Result<(), Box<dyn Error>> {
     let input: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
     println!("Part 1 = {}", count_beam_points(&input));

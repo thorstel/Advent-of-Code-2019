@@ -6,7 +6,7 @@ use intcode::IntcodeProg;
 fn main() -> Result<(), Box<dyn Error>> {
     let prog: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
     let output = IntcodeProg::exec_prog(&prog, vec![1]);

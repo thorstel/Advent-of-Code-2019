@@ -24,7 +24,7 @@ enum MoveStatus {
 fn main() -> Result<(), Box<dyn Error>> {
     let input: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
     let prog = IntcodeProg::new(&input);
@@ -41,7 +41,7 @@ fn oxygen_bfs(prog: IntcodeProg) -> (i64, Option<IntcodeProg>) {
     let mut visited = HashMap::new();
     queue.push_back(([0, 0], prog));
     visited.insert([0, 0], 0);
-    while queue.len() > 0 {
+    while !queue.is_empty() {
         let (pos, prog) = queue.pop_front().unwrap();
         let steps       = *visited.get(&pos).unwrap();
         for cmd in moves.iter() {

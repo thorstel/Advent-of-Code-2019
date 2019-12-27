@@ -42,10 +42,10 @@ impl IntcodeProg {
         input:  &mut VecDeque<i64>,
         output: &mut VecDeque<i64>,
     ) -> ProgramStatus {
-        let op_code =  self.mem[self.ip] %    100;
-        let mode1   = (self.mem[self.ip] %   1000) /   100;
-        let mode2   = (self.mem[self.ip] %  10000) /  1000;
-        let mode3   = (self.mem[self.ip] % 100000) / 10000;
+        let op_code =  self.mem[self.ip] %     100;
+        let mode1   = (self.mem[self.ip] %   1_000) /    100;
+        let mode2   = (self.mem[self.ip] %  10_000) /  1_000;
+        let mode3   = (self.mem[self.ip] % 100_000) / 10_000;
         match op_code {
             1 => {
                 // Add
@@ -61,7 +61,7 @@ impl IntcodeProg {
                 let pos2        = self.get_pos(mode2, self.ip + 2);
                 let pos3        = self.get_pos(mode3, self.ip + 3);
                 self.mem[pos3]  = self.mem[pos1] * self.mem[pos2];
-                self.ip       += 4;
+                self.ip        += 4;
             }
             3 => {
                 // Input
@@ -132,7 +132,7 @@ impl IntcodeProg {
             99 => return ProgramStatus::Finished,
             _  => panic!("Invalid op code!"),
         }
-        return ProgramStatus::Success;
+        ProgramStatus::Success
     }
 
     fn get_pos(&mut self, mode: i64, pos: usize) -> usize {

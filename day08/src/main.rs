@@ -42,15 +42,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
     println!("Part 1 = {}", result);
     println!("Part 2 =");
-    for row in 0..HEIGHT {
-        for col in 0..WIDTH {
-            match image[row][col] {
+    for row in image.iter() {
+        for tile in row.iter() {
+            match tile {
                 0 => print!(" "),
                 1 => print!("#"),
                 _ => panic!("Invalid pixel!"),
             }
         }
-        println!("");
+        println!();
     }
     Ok(())
 }

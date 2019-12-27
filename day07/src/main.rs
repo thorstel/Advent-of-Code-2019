@@ -9,7 +9,7 @@ use intcode::ProgramStatus as IPS;
 fn main() -> Result<(), Box<dyn Error>> {
     let prog: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
 
@@ -34,7 +34,7 @@ fn amplify_signal(prog: &[i64], phase_settings: &[i64]) -> i64 {
     for ps in phase_settings {
         out = *IntcodeProg::exec_prog(prog, vec![*ps, out]).back().unwrap();
     }
-    return out;
+    out
 }
 
 fn amplify_signal_feedback(prog: &[i64], phase_settings: &[i64]) -> i64 {

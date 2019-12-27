@@ -4,7 +4,7 @@ use std::fs;
 fn main() -> Result<(), Box<dyn Error>> {
     let input: Vec<i32> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
 
@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let mut prog = input.clone();
             prog[1] = noun;
             prog[2] = verb;
-            if exec_program(&mut prog) == 19690720 {
+            if exec_program(&mut prog) == 19_690_720 {
                 println!("Part 2 = {}", (100 * noun) + verb);
                 return Ok(());
             }

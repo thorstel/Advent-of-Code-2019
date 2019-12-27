@@ -1,5 +1,5 @@
 fn main() {
-    let input = 156218..652527 + 1;
+    let input = 156_218..=652_527;
     let num_valid1 = input
         .clone()
         .filter(|n| is_valid1(&n.to_string()))
@@ -37,7 +37,7 @@ fn is_valid2(pwd: &str) -> bool {
         }
         prev = c;
     }
-    return result || streak == 2;
+    result || streak == 2
 }
 
 #[cfg(test)]

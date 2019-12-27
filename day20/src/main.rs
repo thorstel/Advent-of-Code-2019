@@ -12,41 +12,39 @@ fn main() -> Result<(), Box<dyn Error>> {
     // disgusting setup... 😱
     let mut labels:    HashMap<(usize, usize), String>            = HashMap::new();
     let mut positions: HashMap<String, Vec<(usize, usize, bool)>> = HashMap::new();
-    for row in 2..(grid.len() - 2) {
-        for col in 0..(grid[row].len() - 2) {
-            let t0 = grid[row][col + 0];
-            let t1 = grid[row][col + 1];
-            let t2 = grid[row][col + 2];
-            let is_outer = (col == 0) || ((col + 2) == grid[row].len() - 1);
+    for (r, row) in grid.iter().enumerate().take(grid.len() - 2).skip(2) {
+        for (c, &t0) in row.iter().enumerate().take(row.len() - 2) {
+            let t1 = grid[r][c + 1];
+            let t2 = grid[r][c + 2];
+            let is_outer = (c == 0) || ((c + 2) == grid[r].len() - 1);
             if is_label(t0) && is_label(t1) && t2 == '.' {
                 let label = t0.to_string() + &t1.to_string();
-                labels.insert((row, col + 2), label.clone());
-                let pos = positions.entry(label.clone()).or_insert(Vec::new());
-                pos.push((row, col + 2, is_outer));
+                labels.insert((r, c + 2), label.clone());
+                let pos = positions.entry(label.clone()).or_insert_with(Vec::new);
+                pos.push((r, c + 2, is_outer));
             } else if t0 == '.' && is_label(t1) && is_label(t2) {
                 let label = t1.to_string() + &t2.to_string();
-                labels.insert((row, col), label.clone());
-                let pos = positions.entry(label.clone()).or_insert(Vec::new());
-                pos.push((row, col, is_outer));
+                labels.insert((r, c), label.clone());
+                let pos = positions.entry(label.clone()).or_insert_with(Vec::new);
+                pos.push((r, c, is_outer));
             }
         }
     }
-    for col in 2..(grid[0].len() - 2) {
-        for row in 0..(grid.len() - 2) {
-            let t0 = grid[row + 0][col];
-            let t1 = grid[row + 1][col];
-            let t2 = grid[row + 2][col];
-            let is_outer = (row == 0) || ((row + 2) == grid.len() - 1);
+    for (r, row) in grid.iter().enumerate().take(grid.len() - 2) {
+        for (c, &t0) in row.iter().enumerate().take(row.len() - 2).skip(2) {
+            let t1 = grid[r + 1][c];
+            let t2 = grid[r + 2][c];
+            let is_outer = (r == 0) || ((r + 2) == grid.len() - 1);
             if is_label(t0) && is_label(t1) && t2 == '.' {
                 let label = t0.to_string() + &t1.to_string();
-                labels.insert((row + 2, col), label.clone());
-                let pos = positions.entry(label.clone()).or_insert(Vec::new());
-                pos.push((row + 2, col, is_outer));
+                labels.insert((r + 2, c), label.clone());
+                let pos = positions.entry(label.clone()).or_insert_with(Vec::new);
+                pos.push((r + 2, c, is_outer));
             } else if t0 == '.' && is_label(t1) && is_label(t2) {
                 let label = t1.to_string() + &t2.to_string();
-                labels.insert((row, col), label.clone());
-                let pos = positions.entry(label.clone()).or_insert(Vec::new());
-                pos.push((row, col, is_outer));
+                labels.insert((r, c), label.clone());
+                let pos = positions.entry(label.clone()).or_insert_with(Vec::new);
+                pos.push((r, c, is_outer));
             }
         }
     }
@@ -57,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn bfs_find_exit(
-    grid:      &Vec<Vec<char>>,
+    grid:      &[Vec<char>],
     labels:    &HashMap<(usize, usize), String>,
     positions: &HashMap<String, Vec<(usize, usize, bool)>>,
 ) -> usize {
@@ -66,26 +64,26 @@ fn bfs_find_exit(
     let mut visited     = HashMap::new();
     queue.push_back((srow, scol));
     visited.insert((srow, scol), 0);
-    while queue.len() > 0 {
+    while !queue.is_empty() {
         let (row, col) = queue.pop_front().unwrap();
         let steps = *visited.get(&(row, col)).unwrap() + 1;
-        for (nrow, ncol, _) in possible_steps(row, col, 1, &grid, &labels, &positions) {
+        for (nrow, ncol, _) in possible_steps(row, col, 1, grid, labels, positions) {
             if let Some(label) = labels.get(&(nrow, ncol)) {
                 if label == "ZZ" {
                     return steps;
                 }
             }
-            if !visited.contains_key(&(nrow, ncol)) {
-                visited.insert((nrow, ncol), steps);
+            visited.entry((nrow, ncol)).or_insert_with(|| {
                 queue.push_back((nrow, ncol));
-            }
+                steps
+            });
         }
     }
     panic!("Could not find exit!");
 }
 
 fn bfs_find_layered_exit(
-    grid:      &Vec<Vec<char>>,
+    grid:      &[Vec<char>],
     labels:    &HashMap<(usize, usize), String>,
     positions: &HashMap<String, Vec<(usize, usize, bool)>>,
 ) -> usize {
@@ -94,19 +92,19 @@ fn bfs_find_layered_exit(
     let mut visited     = HashMap::new();
     queue.push_back((srow, scol, 0));
     visited.insert((srow, scol, 0), 0);
-    while queue.len() > 0 {
+    while !queue.is_empty() {
         let (row, col, lvl) = queue.pop_front().unwrap();
         let steps = *visited.get(&(row, col, lvl)).unwrap() + 1;
-        for (nrow, ncol, nlvl) in possible_steps(row, col, lvl, &grid, &labels, &positions) {
+        for (nrow, ncol, nlvl) in possible_steps(row, col, lvl, grid, labels, positions) {
             if let Some(label) = labels.get(&(nrow, ncol)) {
                 if label == "ZZ" && nlvl == 0 {
                     return steps;
                 }
             }
-            if !visited.contains_key(&(nrow, ncol, nlvl)) {
-                visited.insert((nrow, ncol, nlvl), steps);
+            visited.entry((nrow, ncol, nlvl)).or_insert_with(|| {
                 queue.push_back((nrow, ncol, nlvl));
-            }
+                steps
+            });
         }
     }
     panic!("Could not find exit!");
@@ -116,7 +114,7 @@ fn possible_steps(
     row:       usize,
     col:       usize,
     level:     usize,
-    grid:      &Vec<Vec<char>>,
+    grid:      &[Vec<char>],
     labels:    &HashMap<(usize, usize), String>,
     positions: &HashMap<String, Vec<(usize, usize, bool)>>,
 ) -> Vec<(usize, usize, usize)> {
@@ -136,7 +134,7 @@ fn possible_steps(
     if let Some(dst) = get_destination(row, col, level, labels, positions) {
         steps.push(dst);
     }
-    return steps;
+    steps
 }
 
 fn get_destination(
@@ -159,15 +157,13 @@ fn get_destination(
             } else if level > 0 {
                 return Some((r1, c1, level - 1));
             }
-        } else {
-            if !out1 {
-                return Some((r0, c0, level + 1));
-            } else if level > 0 {
-                return Some((r0, c0, level - 1));
-            }
+        } else if !out1 {
+            return Some((r0, c0, level + 1));
+        } else if level > 0 {
+            return Some((r0, c0, level - 1));
         }
     }
-    return None;
+    None
 }
 
 fn is_label(tile: char) -> bool {

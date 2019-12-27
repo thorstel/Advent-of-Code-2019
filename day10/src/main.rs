@@ -33,18 +33,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (station, mut seen) = asteroids
         .iter()
-        .map(|a| (a, seen_asteroids(a, &asteroids)))
+        .map(|&a| (a, seen_asteroids(a, &asteroids)))
         .max_by(|(_, v), (_, w)| v.len().cmp(&w.len()))
         .unwrap();
     println!("Part 1 = {}", seen.len());
 
-    assert!(seen.len() >= 200, "Part 2 only works 200+ seen asteroids!");
-    seen.sort_by(|a1, a2| {
-        let q1 = quadrant(&station, a1);
-        let q2 = quadrant(&station, a2);
+    assert!(seen.len() >= 200, "Part 2 only works with 200+ seen asteroids!");
+    seen.sort_by(|&a1, &a2| {
+        let q1 = quadrant(station, a1);
+        let q2 = quadrant(station, a2);
         if q1 == q2 {
-            let d1 = distance(&station, a1);
-            let d2 = distance(&station, a2);
+            let d1 = distance(station, a1);
+            let d2 = distance(station, a2);
             d1.cmp(&d2)
         } else {
             q1.cmp(&q2)
@@ -56,13 +56,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn seen_asteroids<'a>(
-    orig:      &'a Asteroid,
-    asteroids: &'a Vec<Asteroid>)
--> Vec<&'a Asteroid> {
+fn seen_asteroids(orig: Asteroid, asteroids: &[Asteroid]) -> Vec<Asteroid> {
     let mut result = Vec::new();
-    let mut seen = HashSet::new();
-    for asteroid in asteroids {
+    let mut seen   = HashSet::new();
+    for &asteroid in asteroids {
         if orig != asteroid {
             let ref_point = calc_reference_point(orig, asteroid);
             if seen.get(&ref_point) == None {
@@ -71,10 +68,10 @@ fn seen_asteroids<'a>(
             }
         }
     }
-    return result;
+    result
 }
 
-fn calc_reference_point(src: &Asteroid, dst: &Asteroid) -> Asteroid {
+fn calc_reference_point(src: Asteroid, dst: Asteroid) -> Asteroid {
     let mut xd = dst.x - src.x;
     let mut yd = dst.y - src.y;
     let gcd = gcd(xd.abs(), yd.abs());
@@ -88,14 +85,14 @@ fn calc_reference_point(src: &Asteroid, dst: &Asteroid) -> Asteroid {
 //  3 | 0 
 // ---S---
 //  2 | 1 
-fn quadrant(station: &Asteroid, asteroid: &Asteroid) -> usize {
+fn quadrant(station: Asteroid, asteroid: Asteroid) -> usize {
     if      asteroid.x >= station.x && asteroid.y <  station.y { 0 }
     else if asteroid.x >  station.x && asteroid.y >= station.y { 1 }
     else if asteroid.x <= station.x && asteroid.y >  station.y { 2 }
     else                                                       { 3 }
 }
 
-fn distance(station: &Asteroid, asteroid: &Asteroid) -> i32 {
+fn distance(station: Asteroid, asteroid: Asteroid) -> i32 {
     let dx = asteroid.x - station.x;
     let dy = asteroid.y - station.y;
     if      dx == 0 { 100 * dy        }

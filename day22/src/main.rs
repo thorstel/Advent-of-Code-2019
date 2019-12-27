@@ -42,7 +42,7 @@ fn perform_shuffle1(mut card: i128, num_cards: i128, techniques: &[Technique]) -
             Technique::Cut(cut)            => (card - cut + num_cards) % num_cards,
         };
     }
-    return card;
+    card
 }
 
 fn perform_shuffle2(

@@ -4,6 +4,8 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fs;
 
+type ChemVec = Vec<(u64, String)>;
+
 const TOTAL_ORE_AMOUNT: u64 = 1_000_000_000_000;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -17,10 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn calc_fuel<'a>(
-    start:   u64,
-    recipes: &'a HashMap<&'a str, (u64, Vec<(u64, &'a str)>)>)
--> u64 {
+fn calc_fuel(start: u64, recipes: &HashMap<String, (u64, ChemVec)>) -> u64 {
     let mut lower_limit = start;
     let mut upper_limit = lower_limit * 2;
     while lower_limit != upper_limit {
@@ -31,13 +30,10 @@ fn calc_fuel<'a>(
             Ordering::Equal   => return fuel,
         }
     }
-    return lower_limit;
+    lower_limit
 }
 
-fn calc_ore<'a>(
-    fuel:    u64,
-    recipes: &'a HashMap<&'a str, (u64, Vec<(u64, &'a str)>)>)
--> u64 {
+fn calc_ore(fuel: u64, recipes: &HashMap<String, (u64, ChemVec)>) -> u64 {
     let mut ore_needed = 0;
     let mut leftovers  = HashMap::new();
     let mut needed     = VecDeque::new();
@@ -45,7 +41,7 @@ fn calc_ore<'a>(
     chemicals
         .iter()
         .for_each(|(a, n)| needed.push_back((a * fuel, n)));
-    while needed.len() > 0 {
+    while !needed.is_empty() {
         let (amount, name) = needed.pop_front().unwrap();
         if *name == "ORE" {
             ore_needed += amount;
@@ -70,29 +66,29 @@ fn calc_ore<'a>(
             }
         }
     }
-    return ore_needed;
+    ore_needed
 }
 
-fn parse_input(input: &str) -> HashMap<&str, (u64, Vec<(u64, &str)>)> {
+fn parse_input(input: &str) -> HashMap<String, (u64, ChemVec)> {
     let mut result = HashMap::new();
     for line in input.lines() {
         let mut it            = line.split("=>");
         let chemicals         = it.next().unwrap();
         let (amount, product) = parse_chemical(it.next().unwrap());
-        let mut input_chems   = Vec::new();
+        let mut input_chems   = ChemVec::new();
         chemicals
-            .split(",")
+            .split(',')
             .for_each(|c| input_chems.push(parse_chemical(c)));
         assert_eq!(result.insert(product, (amount, input_chems)), None);
     }
-    return result;
+    result
 }
 
-fn parse_chemical(tok: &str) -> (u64, &str) {
+fn parse_chemical(tok: &str) -> (u64, String) {
     let mut it = tok.trim().split_whitespace();
     let amount = it.next().unwrap();
     let name   = it.next().unwrap();
-    (amount.parse().unwrap(), name)
+    (amount.parse().unwrap(), name.to_string())
 }
 
 #[cfg(test)]

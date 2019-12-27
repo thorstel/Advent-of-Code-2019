@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn biodiversity_rating(grid: &Vec<Vec<usize>>) -> usize {
+fn biodiversity_rating(grid: &[Vec<usize>]) -> usize {
     let mut power  = 0;
     let mut rating = 0;
     for row in grid.iter() {
@@ -107,12 +107,12 @@ fn evolve2(coords: HashMap<(isize, usize, usize), usize>) -> HashMap<(isize, usi
     new_coords
 }
 
-fn count_neighbors(row: usize, col: usize, grid: &Vec<Vec<usize>>) -> usize {
+fn count_neighbors(row: usize, col: usize, grid: &[Vec<usize>]) -> usize {
     let mut count = 0;
-    if row > 0                   { count += grid[row - 1][col + 0]; }
-    if row < grid.len() - 1      { count += grid[row + 1][col + 0]; }
-    if col > 0                   { count += grid[row + 0][col - 1]; }
-    if col < grid[row].len() - 1 { count += grid[row + 0][col + 1]; }
+    if row > 0                   { count += grid[row - 1][col    ]; }
+    if row < grid.len() - 1      { count += grid[row + 1][col    ]; }
+    if col > 0                   { count += grid[row    ][col - 1]; }
+    if col < grid[row].len() - 1 { count += grid[row    ][col + 1]; }
     count
 }
 

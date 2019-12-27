@@ -33,7 +33,7 @@ fn calc_phases2(input: &str) -> String {
         .take(input.trim().chars().count() * 10_000)
         .collect();
     for _ in 0..100 {
-        signal = calc_signal2(signal);
+        calc_signal2(&mut signal);
     }
     let result: Vec<_> = signal
         .iter()
@@ -50,14 +50,13 @@ fn calc_signal(signal: Vec<i64>) -> Vec<i64> {
         .collect()
 }
 
-fn calc_signal2(signal: Vec<i64>) -> Vec<i64> {
-    let mut new_signal = Vec::new();
-    let mut sum: i64   = signal.iter().sum();
-    for i in 0..signal.len() {
-        new_signal.push(sum % 10);
-        sum -= signal[i];
+fn calc_signal2(signal: &mut [i64]) {
+    let mut sum: i64 = signal.iter().sum();
+    for sig in signal.iter_mut() {
+        let new_sig = sum % 10;
+        sum -= *sig;
+        *sig = new_sig;
     }
-    new_signal
 }
 
 fn calc_elem(signal: &[i64], out_pos: usize) -> i64 {

@@ -88,10 +88,7 @@ fn apply_gravity(moons: &mut [Moon]) {
 }
 
 fn apply_velocity(moons: &mut [Moon]) {
-    for i in 0..moons.len() {
-        let delta = moons[i].vel;
-        moons[i].pos += delta;
-    }
+    moons.iter_mut().for_each(|m| m.pos += m.vel);
 }
 
 fn gravity_deltas(moon1: &Moon, moon2: &Moon) -> (Point, Point) {

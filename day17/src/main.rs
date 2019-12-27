@@ -7,7 +7,7 @@ use intcode::IntcodeProg;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut input: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
     println!("Part 1 = {}", find_intersections(&input));
@@ -28,7 +28,7 @@ fn find_intersections(prog: &[i64]) -> i64 {
             10 => {
                 x  = 0;
                 y += 1;
-                println!("");
+                println!();
             }
             _ => {
                 let c = char::from(*out as u8);

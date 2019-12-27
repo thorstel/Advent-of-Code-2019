@@ -10,7 +10,7 @@ use intcode::ProgramStatus as IPS;
 fn main() -> Result<(), Box<dyn Error>> {
     let mut prog: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
 
@@ -37,7 +37,7 @@ fn play_game(prog: &[i64]) -> i64 {
             let x    = output.pop_front().unwrap();
             let y    = output.pop_front().unwrap();
             let tile = output.pop_front().unwrap();
-            if x == -1 && y == 0 && blocks.len() == 0 {
+            if x == -1 && y == 0 && blocks.is_empty() {
                 return tile;
             } else if tile == 0 {
                 let _ = blocks.remove(&(x, y));

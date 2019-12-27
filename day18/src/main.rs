@@ -16,13 +16,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Prepare map for part 2
     grid[ys - 1][xs - 1] = '@';
-    grid[ys - 1][xs + 0] = '#';
+    grid[ys - 1][xs    ] = '#';
     grid[ys - 1][xs + 1] = '@';
-    grid[ys + 0][xs - 1] = '#';
-    grid[ys + 0][xs + 0] = '#';
-    grid[ys + 0][xs + 1] = '#';
+    grid[ys    ][xs - 1] = '#';
+    grid[ys    ][xs    ] = '#';
+    grid[ys    ][xs + 1] = '#';
     grid[ys + 1][xs - 1] = '@';
-    grid[ys + 1][xs + 0] = '#';
+    grid[ys + 1][xs    ] = '#';
     grid[ys + 1][xs + 1] = '@';
 
     // Solve the 4 quadrants independently
@@ -43,18 +43,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn bfs_find_keys(grid: &Vec<Vec<char>>, xs: i32, ys: i32, target: u32) -> usize {
+fn bfs_find_keys(grid: &[Vec<char>], xs: i32, ys: i32, target: u32) -> usize {
     let mut queue   = VecDeque::new();
     let mut visited = HashMap::new();
     queue.push_back((xs, ys, 0));
     visited.insert((xs, ys, 0), 0usize);
-    while queue.len() > 0 {
+    while !queue.is_empty() {
         let (x, y, keys) = queue.pop_front().unwrap();
         let steps = *visited.get(&(x, y, keys)).unwrap() + 1;
         for (xd, yd) in MOVES.iter() {
             let newx = x + *xd;
             let newy = y + *yd;
-            if can_move(&grid, newx, newy, keys, target) {
+            if can_move(grid, newx, newy, keys, target) {
                 let tile = grid[newy as usize][newx as usize];
                 let mut new_keys = keys;
                 if tile.is_lowercase() {
@@ -62,23 +62,23 @@ fn bfs_find_keys(grid: &Vec<Vec<char>>, xs: i32, ys: i32, target: u32) -> usize 
                 }
                 if new_keys == target {
                     return steps;
-                } else if !visited.contains_key(&(newx, newy, new_keys)) {
-                    visited.insert((newx, newy, new_keys), steps);
-                    queue.push_back((newx, newy, new_keys));
                 }
+                visited.entry((newx, newy, new_keys)).or_insert_with(|| {
+                    queue.push_back((newx, newy, new_keys));
+                    steps
+                });
             }
         }
     }
     panic!("Failed to obtain all keys!");
 }
 
-fn find_start(grid: &Vec<Vec<char>>, borders: &[usize; 4]) -> (usize, usize, u32) {
+fn find_start(grid: &[Vec<char>], borders: &[usize; 4]) -> (usize, usize, u32) {
     let mut xs     = 0;
     let mut ys     = 0;
     let mut target = 0;
-    for y in borders[2]..borders[3] {
-        for x in borders[0]..borders[1] {
-            let tile = grid[y][x];
+    for (y, row) in grid.iter().enumerate().take(borders[3]).skip(borders[2]) {
+        for (x, &tile) in row.iter().enumerate().take(borders[1]).skip(borders[0]) {
             match tile {
                 '#' | '.' => (),
                 '@' => {
@@ -105,7 +105,7 @@ fn key_to_bit(key: char) -> u32 {
     (key as u32) - ('a' as u32)
 }
 
-fn can_move(grid: &Vec<Vec<char>>, x: i32, y: i32, keys: u32, target: u32) -> bool {
+fn can_move(grid: &[Vec<char>], x: i32, y: i32, keys: u32, target: u32) -> bool {
     if x < 0 || y < 0 {
         return false;
     }

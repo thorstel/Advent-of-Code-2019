@@ -17,7 +17,7 @@ enum Dir {
 fn main() -> Result<(), Box<dyn Error>> {
     let prog: Vec<_> = fs::read_to_string("input.txt")?
         .trim()
-        .split(",")
+        .split(',')
         .map(|s| s.parse().unwrap())
         .collect();
 
@@ -38,8 +38,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut col = x_min;
         while col <= x_max {
             if match panels.get(&(col, row)) {
-                Some(color) => *color,
-                None        => 0,
+                Some(&color) => color,
+                None         => 0,
             } == 1 {
                 print!("#");
             } else {
@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
             col += 1;
         }
-        println!("");
+        println!();
         row += 1;
     }
 
@@ -75,8 +75,8 @@ fn paint_panels(prog: &[i64], start_color: i64) -> HashMap<(i64, i64), i64> {
             xpos       = x;
             ypos       = y;
             let floor_color = match panels.get(&(xpos, ypos)) {
-                Some(color) => *color,
-                None        => 0,
+                Some(&color) => color,
+                None         => 0,
             };
             input.push_back(floor_color);
         }
@@ -85,7 +85,7 @@ fn paint_panels(prog: &[i64], start_color: i64) -> HashMap<(i64, i64), i64> {
             break;
         }
     }
-    return panels;
+    panels
 }
 
 fn new_dir(curr_dir: Dir, turn: i64) -> Dir {

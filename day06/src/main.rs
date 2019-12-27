@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let     input  = fs::read_to_string("input.txt")?;
     let mut orbits = HashMap::new();
     for line in input.lines() {
-        let obj: Vec<_> = line.trim().split(")").collect();
+        let obj: Vec<_> = line.trim().split(')').collect();
         orbits.insert(obj[1], obj[0]);
     }
 
@@ -43,8 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let you_path   = path_center(&"YOU");
     let common     = you_path
         .iter()
-        .filter(|obj| santa_path.contains(obj))
-        .next()
+        .find(|obj| santa_path.contains(obj))
         .unwrap();
     let you_dist   = you_path.iter().take_while(|obj| *obj != common).count();
     let santa_dist = santa_path.iter().take_while(|obj| *obj != common).count();
